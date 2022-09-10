@@ -3,7 +3,7 @@
 	"FileReferences": {
 		"Moc": "clearker.moc3",
 		"Textures": [
-			"clearker.4096/texture_00.png"
+			"texture_00.png"
 		],
 		"Physics": "clearker.physics3.json",
 		"DisplayInfo": "clearker.cdi3.json"
