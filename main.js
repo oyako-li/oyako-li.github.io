@@ -12,7 +12,7 @@ const {
 } = Kalidokit;
 
 // 1, Live2Dモデルへのパスを指定する
-const modelUrl = "./clearker/clearker.model3.json";
+const modelUrl = "./clearker/clearker4.model3.json";
 const videoElement = document.getElementById("my-video");
 const guideCanvas = document.getElementById("my-guides");
 
