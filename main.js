@@ -12,7 +12,7 @@ const {
 } = Kalidokit;
 
 // 1, Live2Dモデルへのパスを指定する
-const modelUrl = "./hiyori/hiyori_pro_t10.model3.json";
+const modelUrl = "./clerker/clerker.model3.json";
 const videoElement = document.getElementById("my-video");
 const guideCanvas = document.getElementById("my-guides");
 
