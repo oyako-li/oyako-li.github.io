@@ -17,13 +17,54 @@
 		<script src="//cdn.jsdelivr.net/npm/kalidokit@1.1/dist/kalidokit.umd.js"></script>
 	</head>
 	<body>
-		<!-- Preview -->
-		<div id="preview">
-			<video id="my-video"></video>
-			<canvas id="my-guides"></canvas>
-		</div>
-		<!-- Live2D -->
-		<canvas id="my-live2d"></canvas>
-		<script type="module" src="main.js"></script>
+		<h1>テキストを入力</h1>
+		<textarea></textarea>
 	</body>
+	<script>
+		const synthes = new SpeechSynthesisUtterance();
+		synthes.lang = 'ja-JP';
+		synthes.text = 'マイクテストマイクテスト';
+		synthes.pitch = 1;
+		synthes.rate = 0.8;
+		
+		if ('speechSynthesis' in window) {
+			alert("このブラウザは音声合成に対応しています。🎉")
+		} else {
+			alert("このブラウザは音声合成に対応していません。😭")
+		}
+		speechSynthesis.speak(synthes);
+		function TTS(){
+			if (e.key === 'Enter' && !e.shiftKey) {
+			console.log('come here');
+			// setSpiner(true) // 👇 Get input value
+			// const obj = {speaker: 3, text:text};
+			// const method = "POST";
+			// const body = JSON.stringify(obj);
+			// const headers = {
+			// 	'Accept': 'audio/wav',
+			// 	'Content-Type': 'application/json'
+			// };
+			// fetch('/api/',{method,headers,body})
+			// .then(res=>res.blob()).then(r=>{
+			// 	// const [voice] = useSound(URL.createObjectURL(r));
+			// 	// voice();
+			// 	setVoice(new Audio(URL.createObjectURL(r)));
+			// 	setSpiner(false);
+			// 	setText('');
+			// 	console.log(r.size);
+			// }).catch(err=>setText(err));
+		}
+	};
+	document.querySelector("textarea").addEventListener("keydown", function(event) {
+		if (event.keyCode === 13 && !event.shiftKey) {
+			// Enter key was pressed without Shift key
+			// Your code here
+			console.log(event.target);
+			synthes.text = event.target.value;
+			speechSynthesis.speak(synthes);
+			console.log("Enter key was pressed without Shift");
+			event.target.value='';
+			}
+		});
+	</script>
 </html>
