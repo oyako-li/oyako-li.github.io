@@ -1,52 +1,594 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="stylesheet" href="custom.css"/>
-		<!-- Live2D -->
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-	</head>
-	<body class="card">
-		<div class="card-header">
-		</div>
-		<div class="card-content">
-			<h1 class="label">テキストを入力</h1>
-			<div class="box">
-				<textarea class="textarea" placeholder="e.g. あ〜、マイクテスト"></textarea>
-			</div>
-			<h2 class="label">入力履歴</h2>
-			<div class="box content">
-				<ul class=""></ul>
-			</div>
-		</div>
-	</body>
-	<script>
-		const synthes = new SpeechSynthesisUtterance();
-		synthes.lang = 'ja-JP';
-		synthes.text = 'マイクテストマイクテスト';
-		synthes.pitch = 1;
-		synthes.rate = 0.9;
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>oyako-li | Portfolio</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-		document.querySelector("textarea").addEventListener("keydown", function(event) {
-			if (event.keyCode === 13 && !event.shiftKey) {
-				const text = event.target.textContent;
-				synthes.text = event.target.value;
-				speechSynthesis.speak(synthes);
-				const li = document.createElement('li');
-				li.innerText=event.target.value;
-				li.onclick=(e)=>{
-					synthes.text=e.target.innerText;
-					speechSynthesis.speak(synthes);
-				}
-				const list = document.querySelector('ul');
-				list.insertBefore(li, list.firstChild);
-				event.target.value='';
-				// event.target.focus();
-				// event.target.setSelectionRange(0, 0);
-				const trimmedText = text.trim();
-				event.target.selectionStart = 0;
-				event.target.selectionEnd = 0;
-			};
-		});
-	</script>
+    :root {
+      --bg: #0f0f11;
+      --surface: #1a1a1f;
+      --border: #2a2a32;
+      --accent: #7c6bff;
+      --accent-soft: rgba(124, 107, 255, 0.12);
+      --text: #e8e8ee;
+      --muted: #888899;
+      --radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      backdrop-filter: blur(12px);
+      background: rgba(15, 15, 17, 0.8);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8rem 2rem 4rem;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: url("images/hero-tokyo-dusk.jpg") center 65% / cover no-repeat;
+      z-index: -2;
+    }
+
+    .hero-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15,15,17,0.55) 0%, rgba(15,15,17,0.75) 55%, var(--bg) 100%);
+      z-index: -1;
+    }
+
+    .hero-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(124, 107, 255, 0.3);
+      border-radius: 100px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.8rem;
+      margin-bottom: 1.5rem;
+      width: fit-content;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+    }
+
+    .hero h1 span { color: var(--accent); }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+    }
+
+    .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.6rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(124, 107, 255, 0.35);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 28px rgba(124, 107, 255, 0.5); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--muted); }
+
+    /* ── Section common ── */
+    section { padding: 5rem 2rem; }
+    .section-inner { max-width: 860px; margin: 0 auto; }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 3rem;
+    }
+
+    /* ── Strengths ── */
+    .strength-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .strength-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .strength-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+    .strength-icon { font-size: 1.6rem; margin-bottom: 0.8rem; }
+    .strength-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.4rem; }
+    .strength-desc { font-size: 0.85rem; color: var(--muted); }
+
+    /* ── Skills ── */
+    #skills { background: var(--surface); }
+
+    .skill-category { margin-bottom: 2.2rem; }
+    .skill-category:last-child { margin-bottom: 0; }
+
+    .skill-category-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.9rem;
+    }
+
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+    .skill-pill {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.45rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .skill-pill:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+    /* ── Works ── */
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .work-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: default;
+    }
+    .work-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+
+    .work-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--accent-soft);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .work-title { font-weight: 700; margin-bottom: 0.4rem; }
+    .work-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
+    .work-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .tag {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* ── Gallery ── */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .gallery-item {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      border: 1px solid var(--border);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .gallery-item:hover img { transform: scale(1.06); }
+
+    .gallery-caption {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      padding: 0.9rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(15,15,17,0) 0%, rgba(15,15,17,0.85) 100%);
+    }
+
+    /* ── About ── */
+    #about { background: var(--surface); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--accent-soft);
+      border: 3px solid rgba(124, 107, 255, 0.4);
+      margin: 0 auto;
+      box-shadow: 0 8px 30px rgba(124, 107, 255, 0.25);
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .about-text p { color: var(--muted); margin-bottom: 1rem; }
+
+    .info-list { list-style: none; margin-top: 1.2rem; }
+    .info-list li {
+      display: flex;
+      gap: 0.8rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .info-list li:last-child { border-bottom: none; }
+    .info-label { color: var(--muted); min-width: 80px; }
+
+    /* ── Contact ── */
+    .contact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      text-align: center;
+    }
+    .contact-card p { color: var(--muted); margin-bottom: 2rem; }
+    .social-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      nav { padding: 1rem; }
+      .nav-links { gap: 1.2rem; }
+      .about-grid { grid-template-columns: 1fr; }
+      .avatar { width: 120px; height: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">Kazuki Matsuzawa</a>
+  <ul class="nav-links">
+    <li><a href="#strengths">Strengths</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#works">Works</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div class="hero-badge">フルリモート歓迎 / PoC・新規事業 対応可</div>
+    <h1>AI・データ・Webを横断して<br><span>アイデア</span>を素早く形にする</h1>
+    <p>データサイエンス、AI、Webフロントエンド・バックエンドまで一貫して開発するエンジニア。PoCを素早く立ち上げ、ユーザー体験を重視しながら改善を繰り返すことが得意です。</p>
+    <div class="btn-group">
+      <a href="#works" class="btn btn-primary">実績を見る</a>
+      <a href="#contact" class="btn btn-outline">連絡する</a>
+    </div>
+  </div>
+</section>
+
+<!-- Strengths -->
+<section id="strengths">
+  <div class="section-inner">
+    <div class="section-label">Strengths</div>
+    <h2 class="section-title">強み</h2>
+    <div class="strength-grid">
+      <div class="strength-card">
+        <div class="strength-icon">⚡</div>
+        <div class="strength-title">高速なプロトタイピング</div>
+        <div class="strength-desc">アイデアからプロトタイプまで高速に実装します。</div>
+      </div>
+      <div class="strength-card">
+        <div class="strength-icon">🧩</div>
+        <div class="strength-title">フルスタックな開発力</div>
+        <div class="strength-desc">フロントエンド・バックエンド・インフラを横断して開発できます。</div>
+      </div>
+      <div class="strength-card">
+        <div class="strength-icon">🤖</div>
+        <div class="strength-title">AI・LLM活用</div>
+        <div class="strength-desc">AI・LLM・データ分析を活用したプロダクト開発が得意です。</div>
+      </div>
+      <div class="strength-card">
+        <div class="strength-icon">🎯</div>
+        <div class="strength-title">UI/UX設計</div>
+        <div class="strength-desc">ユーザー体験を重視したUI/UX設計にこだわります。</div>
+      </div>
+      <div class="strength-card">
+        <div class="strength-icon">🌱</div>
+        <div class="strength-title">小規模サービスの企画・運営</div>
+        <div class="strength-desc">技術を使って人が集まる場づくりにも取り組んでいます。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Skills -->
+<section id="skills">
+  <div class="section-inner">
+    <div class="section-label">Technical Skills</div>
+    <h2 class="section-title">技術スタック</h2>
+
+    <div class="skill-category">
+      <div class="skill-category-title">FRONTEND</div>
+      <div class="skill-tags">
+        <span class="skill-pill">TypeScript</span>
+        <span class="skill-pill">JavaScript</span>
+        <span class="skill-pill">React</span>
+        <span class="skill-pill">Next.js</span>
+        <span class="skill-pill">HTML</span>
+        <span class="skill-pill">CSS</span>
+        <span class="skill-pill">Tailwind CSS</span>
+        <span class="skill-pill">Electron</span>
+      </div>
+    </div>
+
+    <div class="skill-category">
+      <div class="skill-category-title">BACKEND</div>
+      <div class="skill-tags">
+        <span class="skill-pill">Python</span>
+        <span class="skill-pill">FastAPI</span>
+        <span class="skill-pill">Flask</span>
+        <span class="skill-pill">Django</span>
+        <span class="skill-pill">Node.js</span>
+      </div>
+    </div>
+
+    <div class="skill-category">
+      <div class="skill-category-title">AI / DATA</div>
+      <div class="skill-tags">
+        <span class="skill-pill">Google Cloud</span>
+        <span class="skill-pill">BigQuery</span>
+        <span class="skill-pill">Vertex AI</span>
+        <span class="skill-pill">LangChain</span>
+        <span class="skill-pill">DSPy</span>
+        <span class="skill-pill">Ollama</span>
+        <span class="skill-pill">LightweightMMM</span>
+        <span class="skill-pill">LightGBM</span>
+        <span class="skill-pill">Snowflake</span>
+      </div>
+    </div>
+
+    <div class="skill-category">
+      <div class="skill-category-title">INFRASTRUCTURE</div>
+      <div class="skill-tags">
+        <span class="skill-pill">AWS</span>
+        <span class="skill-pill">GCP</span>
+        <span class="skill-pill">Docker</span>
+        <span class="skill-pill">Raspberry Pi</span>
+        <span class="skill-pill">Linux</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Works -->
+<section id="works">
+  <div class="section-inner">
+    <div class="section-label">Projects</div>
+    <h2 class="section-title">主なプロジェクト</h2>
+    <div class="works-grid">
+      <div class="work-card">
+        <div class="work-thumb">📦</div>
+        <div class="work-title">SCM需要予測・需給計画システム</div>
+        <div class="work-desc">BigQueryを利用した需給計画システム。データマート設計・SQL最適化・データパイプライン構築を担当。</div>
+        <div class="work-tags"><span class="tag">BigQuery</span><span class="tag">SQL</span><span class="tag">GCP</span></div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb">📊</div>
+        <div class="work-title">AIマーケティング分析基盤</div>
+        <div class="work-desc">Marketing Mix Modelingによる広告効果分析。Streamlitダッシュボードと FastAPI API を構築。</div>
+        <div class="work-tags"><span class="tag">LightweightMMM</span><span class="tag">Streamlit</span><span class="tag">FastAPI</span></div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb">🔧</div>
+        <div class="work-title">Raspberry Pi IoTシステム</div>
+        <div class="work-desc">QRコード認識・音声案内・GPIO制御・カメラ連携を組み合わせた組み込みシステム。</div>
+        <div class="work-tags"><span class="tag">Raspberry Pi</span><span class="tag">Python</span><span class="tag">IoT</span></div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb">🧠</div>
+        <div class="work-title">LLMエージェント</div>
+        <div class="work-desc">LangChain / Vertex AI Agent を用いたマルチエージェント設計。MCP連携にも対応。</div>
+        <div class="work-tags"><span class="tag">LangChain</span><span class="tag">Vertex AI</span><span class="tag">MCP</span></div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb">🗣️</div>
+        <div class="work-title">音声読み上げWebアプリ</div>
+        <div class="work-desc">テキストを日本語音声で読み上げる個人開発Webアプリ。入力履歴の再生も可能。</div>
+        <div class="work-tags"><span class="tag">JavaScript</span><span class="tag">WebAPI</span></div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb">🗨️</div>
+        <div class="work-title">哲学イベント運営支援 / 投稿自動化</div>
+        <div class="work-desc">哲学対話イベントの運営支援と、イベント投稿の自動化ツールを個人開発。</div>
+        <div class="work-tags"><span class="tag">個人開発</span><span class="tag">自動化</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Gallery -->
+<section id="gallery">
+  <div class="section-inner">
+    <div class="section-label">Snapshots</div>
+    <h2 class="section-title">日常のひとコマ</h2>
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <img src="images/gallery-sakura.jpg" alt="桜と夕日" loading="lazy">
+        <div class="gallery-caption">桜と夕日</div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/gallery-tokyostation.jpg" alt="東京駅の夜景" loading="lazy">
+        <div class="gallery-caption">東京駅の夜景</div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/gallery-zojoji.jpg" alt="増上寺のキャンドルナイト" loading="lazy">
+        <div class="gallery-caption">増上寺のキャンドルナイト</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section id="about">
+  <div class="section-inner">
+    <div class="section-label">About me</div>
+    <h2 class="section-title">自己紹介</h2>
+    <div class="about-grid">
+      <div class="avatar"><img src="images/profile.jpg" alt="Kazuki Matsuzawa"></div>
+      <div class="about-text">
+        <p>データサイエンス、AI、Webフロントエンド・バックエンドまで一貫して開発しています。PoCを素早く立ち上げ、ユーザー体験を重視しながら改善を繰り返すことが得意です。</p>
+        <p>仕事ではデータ基盤・需要予測・AIシステム開発を担当する一方、個人ではイベント運営やWebサービス開発など、技術を使って人が集まる場づくりにも取り組んでいます。</p>
+        <ul class="info-list">
+          <li><span class="info-label">働き方</span><span>フルリモート歓迎 / 新規事業・PoC開発 / 技術選定から実装まで対応可能</span></li>
+          <li><span class="info-label">興味</span><span>AI Agent / LLM / Webアプリケーション / DevTools / 自動化 / IoT / 哲学対話 / コミュニティづくり</span></li>
+          <li><span class="info-label">GitHub</span><span>oyako-li</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <div class="section-inner">
+    <div class="section-label">Contact</div>
+    <h2 class="section-title">連絡先</h2>
+    <div class="contact-card">
+      <p>お仕事のご相談・コラボレーションなどお気軽にどうぞ。</p>
+      <div class="social-links">
+        <a href="https://github.com/oyako-li" class="btn btn-outline" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:oyakoli3@gmail.com" class="btn btn-primary">メールを送る</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2026 oyako-li. Built with HTML &amp; CSS.</p>
+</footer>
+
+</body>
 </html>
