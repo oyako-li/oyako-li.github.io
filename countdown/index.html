@@ -2,156 +2,159 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>カウントダウン — 2045/12/21 24:00</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<title>Countdown Watch — 2045/12/21 24:00</title>
 <style>
   :root {
-    --bg1: #0a0e27;
-    --bg2: #1a1145;
-    --accent: #7b5cff;
-    --accent2: #4dd0e1;
-    --text: #eef1ff;
-    --muted: #9aa0c8;
-    --card: rgba(255, 255, 255, 0.06);
-    --card-border: rgba(255, 255, 255, 0.12);
+    --accent: #4dd0e1;
+    --accent2: #7b5cff;
+    --text: #ffffff;
+    --muted: #7a8099;
+    --ring-bg: #16181f;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   html, body { height: 100%; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
-                 "Segoe UI", "Noto Sans JP", Meiryo, sans-serif;
+    background: #000;                 /* AMOLED: 純黒で省電力 */
     color: var(--text);
-    background: radial-gradient(1200px 800px at 20% -10%, #2a1a63 0%, transparent 55%),
-                radial-gradient(1000px 700px at 100% 110%, #0e3a4a 0%, transparent 50%),
-                linear-gradient(160deg, var(--bg1), var(--bg2));
-    min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Roboto",
+                 "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* 丸い画面いっぱいに広がる正方形の時計面。vmin で常に画面内に収める。 */
+  .watch {
+    position: relative;
+    width: 100vmin;
+    height: 100vmin;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);        /* 12時位置から開始 */
+  }
+  .ring circle { fill: none; stroke-linecap: round; }
+  .ring .track { stroke: var(--ring-bg); }
+  .ring .prog  {
+    stroke: url(#grad);
+    transition: stroke-dashoffset 1s linear;
+  }
+  .ring.notrans .prog { transition: none; }
+
+  /* コンテンツは内接円のセーフゾーン(直径の約68%)に収める */
+  .face {
+    position: absolute;
+    width: 68%;
+    height: 68%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px;
-    overflow-x: hidden;
-  }
-
-  .wrap {
-    width: 100%;
-    max-width: 820px;
     text-align: center;
-  }
-
-  .eyebrow {
-    letter-spacing: 0.3em;
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-
-  h1 {
-    font-size: clamp(1.4rem, 4vw, 2.2rem);
-    font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: 6px;
+    gap: 2%;
   }
 
   .target {
-    font-size: clamp(0.9rem, 2.6vw, 1.1rem);
-    color: var(--accent2);
+    font-size: 5.2vmin;
+    letter-spacing: 0.12em;
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
-    margin-bottom: 40px;
   }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: clamp(8px, 2.5vw, 20px);
-  }
-
-  .cell {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: 18px;
-    padding: clamp(14px, 3vw, 28px) 6px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
-  }
-
-  .num {
-    font-size: clamp(1.8rem, 9vw, 4rem);
+  .days {
+    font-size: 24vmin;
     font-weight: 800;
-    line-height: 1;
+    line-height: 0.95;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.02em;
-    background: linear-gradient(180deg, #fff, var(--accent2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+    color: var(--text);
   }
 
-  .label {
-    margin-top: 10px;
-    font-size: clamp(0.65rem, 2vw, 0.85rem);
-    color: var(--muted);
-    letter-spacing: 0.15em;
+  .days-label {
+    font-size: 5vmin;
+    letter-spacing: 0.35em;
+    color: var(--accent);
+    margin-top: -0.4vmin;
   }
 
-  .foot {
-    margin-top: 34px;
-    font-size: 0.85rem;
-    color: var(--muted);
+  .hms {
+    font-size: 8.6vmin;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: #dfe4f5;
+    margin-top: 1vmin;
   }
 
   .done {
-    font-size: clamp(1.6rem, 6vw, 3rem);
+    font-size: 9vmin;
     font-weight: 800;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--accent);
     animation: pulse 1.6s ease-in-out infinite;
   }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.55; }
+  /* PC/スマホ等の非円形画面でも“丸い時計”として見せる縁取り */
+  @media (min-aspect-ratio: 5/4), (max-aspect-ratio: 4/5) {
+    .watch::after {
+      content: "";
+      position: absolute;
+      inset: 1.5%;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px #14161d, 0 0 60px rgba(77,208,225,0.08) inset;
+      pointer-events: none;
+    }
   }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="eyebrow">Countdown</div>
-    <h1>2045年12月21日 24:00 まで</h1>
-    <div class="target" id="target"></div>
+  <div class="watch" id="watch">
+    <svg class="ring" id="ring" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stop-color="#4dd0e1"/>
+          <stop offset="100%" stop-color="#7b5cff"/>
+        </linearGradient>
+      </defs>
+      <circle class="track" cx="50" cy="50" r="46" stroke-width="3"></circle>
+      <circle class="prog"  cx="50" cy="50" r="46" stroke-width="3"></circle>
+    </svg>
 
-    <div class="grid" id="grid">
-      <div class="cell"><div class="num" id="days">--</div><div class="label">DAYS</div></div>
-      <div class="cell"><div class="num" id="hours">--</div><div class="label">HOURS</div></div>
-      <div class="cell"><div class="num" id="minutes">--</div><div class="label">MINUTES</div></div>
-      <div class="cell"><div class="num" id="seconds">--</div><div class="label">SECONDS</div></div>
+    <div class="face" id="face">
+      <div class="target" id="target"></div>
+      <div class="days" id="days">--</div>
+      <div class="days-label">DAYS</div>
+      <div class="hms" id="hms">--:--:--</div>
     </div>
-
-    <div class="foot" id="foot"></div>
   </div>
 
 <script>
-  // 「2045/12/21 24:00」は当日の終わり = 2045/12/22 00:00:00 と同じ。
-  // ローカルタイムで解釈する。
-  var TARGET = new Date(2045, 11, 22, 0, 0, 0, 0); // 月は0始まり: 11 = 12月
+  // 「2045/12/21 24:00」= 2045/12/22 00:00:00（ローカルタイム）
+  var TARGET = new Date(2045, 11, 22, 0, 0, 0, 0);
 
-  var el = {
-    target: document.getElementById('target'),
-    grid: document.getElementById('grid'),
-    days: document.getElementById('days'),
-    hours: document.getElementById('hours'),
-    minutes: document.getElementById('minutes'),
-    seconds: document.getElementById('seconds'),
-    foot: document.getElementById('foot')
-  };
+  var elDays = document.getElementById('days');
+  var elHms  = document.getElementById('hms');
+  var elTarget = document.getElementById('target');
+  var elFace = document.getElementById('face');
+  var ring = document.getElementById('ring');
+  var prog = ring.querySelector('.prog');
+
+  var C = 2 * Math.PI * 46;           // 進捗リングの円周
+  prog.setAttribute('stroke-dasharray', C.toFixed(3));
 
   function pad(n, len) {
     var s = String(n);
@@ -159,43 +162,48 @@
     return s;
   }
 
-  el.target.textContent = '目標: ' + TARGET.getFullYear() + '/' +
-    pad(TARGET.getMonth() + 1) + '/' + pad(TARGET.getDate()) + ' ' +
-    pad(TARGET.getHours()) + ':' + pad(TARGET.getMinutes()) + ':' + pad(TARGET.getSeconds());
+  elTarget.textContent = TARGET.getFullYear() + '.' +
+    pad(TARGET.getMonth() + 1) + '.' + pad(TARGET.getDate());
+
+  var prevSec = -1;
 
   function render() {
     var now = new Date();
     var diff = TARGET.getTime() - now.getTime();
 
     if (diff <= 0) {
-      el.grid.innerHTML = '<div class="done" style="grid-column:1/-1">🎉 その時が来ました！</div>';
-      el.foot.textContent = '2045/12/21 24:00 に到達しました。';
-      return true; // 停止
+      elFace.innerHTML = '<div class="done">TIME</div>';
+      prog.setAttribute('stroke-dashoffset', '0');
+      return true;
     }
 
-    var sec = Math.floor(diff / 1000);
-    var days = Math.floor(sec / 86400);
-    var hours = Math.floor((sec % 86400) / 3600);
-    var minutes = Math.floor((sec % 3600) / 60);
-    var seconds = sec % 60;
+    var t = Math.floor(diff / 1000);
+    var days = Math.floor(t / 86400);
+    var hours = Math.floor((t % 86400) / 3600);
+    var minutes = Math.floor((t % 3600) / 60);
+    var seconds = t % 60;
 
-    el.days.textContent = pad(days, 3);
-    el.hours.textContent = pad(hours);
-    el.minutes.textContent = pad(minutes);
-    el.seconds.textContent = pad(seconds);
+    elDays.textContent = days.toLocaleString('en-US');
+    elHms.textContent = pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
 
-    var totalWeeks = Math.floor(days / 7);
-    el.foot.textContent = '残り 約' + days.toLocaleString('ja-JP') + '日（およそ ' +
-      totalWeeks.toLocaleString('ja-JP') + '週間）';
+    // 外周リングは現在の「秒」を1分かけて一周（時計らしい動き）
+    var frac = now.getSeconds() / 60;
+    // 59→0 の折り返しはトランジションを一瞬切って逆走を防ぐ
+    if (now.getSeconds() < prevSec) {
+      ring.classList.add('notrans');
+      void ring.offsetWidth;          // 強制リフロー
+      prog.setAttribute('stroke-dashoffset', (C * (1 - frac)).toFixed(3));
+      void ring.offsetWidth;
+      ring.classList.remove('notrans');
+    } else {
+      prog.setAttribute('stroke-dashoffset', (C * (1 - frac)).toFixed(3));
+    }
+    prevSec = now.getSeconds();
     return false;
   }
 
   var timer;
-  function tick() {
-    if (render()) {
-      clearInterval(timer);
-    }
-  }
+  function tick() { if (render()) clearInterval(timer); }
   tick();
   timer = setInterval(tick, 1000);
 </script>
