@@ -30,7 +30,9 @@
 		synthes.rate = 0.9;
 
 		document.querySelector("textarea").addEventListener("keydown", function(event) {
-			if (event.keyCode === 13 && !event.shiftKey) {
+			if (event.key === "Enter" && !event.shiftKey && !event.isComposing && event.keyCode !== 229) {
+				event.preventDefault();          // Enter の改行を入力欄に残さない
+				if (!event.target.value.trim()) return;
 				const text = event.target.textContent;
 				synthes.text = event.target.value;
 				speechSynthesis.speak(synthes);
