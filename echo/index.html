@@ -62,6 +62,7 @@ h1{font-size:19px;font-weight:600;letter-spacing:.04em;margin:0}
 .scenes::-webkit-scrollbar{display:none}
 .scene{flex:none;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:15px;cursor:pointer;white-space:nowrap}
 .scene[aria-selected="true"]{background:var(--text);color:var(--bg);border-color:var(--text)}
+.quick.collapsed .scene[aria-selected="true"]{background:var(--card);color:var(--text);border-color:var(--line)}
 .scene.add{border-style:dashed;color:var(--muted);background:transparent}
 .edit-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:-2px 0 10px;font-size:13px;color:var(--muted)}
 .edit-bar button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;min-height:36px}
@@ -444,7 +445,8 @@ function sceneTab(sc) {
   const b = document.createElement("button");
   b.className = "scene"; b.setAttribute("role", "tab"); b.textContent = sc.name;
   b.setAttribute("aria-selected", String(sc.id === state.sceneId));
-  b.onclick = () => selectScene(sc.id);
+  // たたんでいるときは、場面を押すとその場面でひらく
+  b.onclick = () => { selectScene(sc.id); if (state.quickCollapsed) setCollapsed(false); };
   return b;
 }
 function renderScenes() {
@@ -531,6 +533,7 @@ $("#editorDone").onclick = closeEditor;
 function setCollapsed(c) {
   state.quickCollapsed = c; save();
   $("#strip").hidden = c;
+  document.querySelector(".quick").classList.toggle("collapsed", c);
   $("#collapseBtn").setAttribute("aria-expanded", String(!c));
   $("#collapseBtn").setAttribute("aria-label", c ? "よく使う言葉をひらく" : "よく使う言葉をたたむ");
 }
