@@ -188,6 +188,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .show-top .close{margin-left:auto;background:var(--text);color:var(--bg);border-color:var(--text);font-weight:600}
 .show-text{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;line-height:1.25;white-space:pre-wrap;word-break:break-word;overflow:hidden;padding:8px;transition:transform .25s}
 .show.flipped .show-text{transform:rotate(180deg)}
+.show.vertical .show-text{writing-mode:vertical-rl;text-orientation:mixed;line-height:1.3;text-align:start}
+.show-text .tcy{text-combine-upright:all;-webkit-text-combine:horizontal}
+.show-top .dir[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -308,6 +311,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <div class="show" id="show" role="dialog" aria-label="大きく見せる" hidden>
   <div class="show-top">
     <button class="flip" id="flip" aria-pressed="false">⇅ 向かいの人へ</button>
+    <button class="dir" id="dir" aria-pressed="true">縦書き</button>
     <button id="showSpeak">もう一度話す</button>
     <button class="close" id="showClose">閉じる</button>
   </div>
@@ -625,7 +629,14 @@ function openShow(str) {
   showing = (str ?? (text.value.trim() || lastSpoken)).trim();
   if (!showing) return;
   showOpener = document.activeElement;
-  $("#showText").textContent = showing;
+  // 縦書きでは 1〜2 桁の数字を横に並べて 1 文字分に収める（縦中横）
+  const inner = document.createElement("span");
+  $("#showText").replaceChildren(inner);
+  inner.replaceChildren(...showing.split(/((?<![0-9])[0-9]{1,2}(?![0-9]))/).map((part, i) => {
+    if (i % 2 === 0) return document.createTextNode(part);
+    const t = document.createElement("span"); t.className = "tcy"; t.textContent = part; return t;
+  }));
+  setVertical(!state.showHorizontal);
   $("#show").hidden = false;
   fitShow();
   $("#showClose").focus();
@@ -648,6 +659,14 @@ $("#showSpeak").onclick = () => say(showing);
 $("#flip").onclick = e => {
   const on = $("#show").classList.toggle("flipped");
   e.currentTarget.setAttribute("aria-pressed", on);
+};
+function setVertical(v) {
+  $("#show").classList.toggle("vertical", v);
+  $("#dir").setAttribute("aria-pressed", String(v));
+}
+$("#dir").onclick = () => {
+  state.showHorizontal = !state.showHorizontal; save();
+  setVertical(!state.showHorizontal); fitShow();
 };
 addEventListener("resize", fitShow);
 
