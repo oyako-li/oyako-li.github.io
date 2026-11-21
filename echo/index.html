@@ -103,17 +103,26 @@ h1{font-size:19px;font-weight:600;letter-spacing:.04em;margin:0}
 .empty{color:var(--muted);font-size:14px;text-align:center;padding:20px 12px;border:1px dashed var(--line);border-radius:12px}
 main .empty{border:0;margin:auto 0}
 
-/* 履歴 */
-ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-li{display:flex;align-items:center;gap:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:2px 2px 2px 0;transition:border-color .15s,background .15s}
-li.playing{border-color:var(--accent);background:var(--accent-soft)}
-li .say{flex:1;min-width:0;min-height:44px;text-align:left;border:0;background:none;padding:8px 4px 8px 12px;cursor:pointer;white-space:pre-wrap;word-break:break-word;display:flex;gap:10px;align-items:flex-start}
-li .say svg{flex:none;margin-top:4px;color:var(--muted)}
-li.playing .say svg{color:var(--accent)}
-.mini{width:40px;height:44px;border:0;background:none;color:var(--muted);border-radius:10px;cursor:pointer;flex:none;display:grid;place-items:center}
-.mini:hover{color:var(--accent);background:var(--bg)}
-.mini.del:hover{color:var(--danger)}
-.mini.on{color:#d49a00}
+/* 履歴：自分が話した言葉を、チャットの吹き出しで右に寄せる */
+main{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 18px);mask-image:linear-gradient(to bottom,transparent 0,#000 18px)}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+li{display:flex;flex-direction:column;align-items:flex-end}
+li.when{align-items:center;font-size:12px;color:var(--muted);margin:10px 0 2px;font-variant-numeric:tabular-nums}
+li .row{display:flex;align-items:center;justify-content:flex-end;width:100%}
+li .say{max-width:calc(100% - 40px);min-height:44px;text-align:left;border:1px solid transparent;background:var(--accent-soft);color:var(--text);border-radius:20px 20px 6px 20px;padding:9px 15px;font-size:17px;line-height:1.45;cursor:pointer;white-space:pre-wrap;word-break:break-word;transition:background .15s,color .15s,transform .08s}
+li .say:active{transform:scale(.98)}
+li.playing .say{background:var(--accent);color:var(--on-accent)}
+li .more{flex:none;width:40px;height:44px;border:0;background:none;color:var(--muted);opacity:.6;border-radius:10px;cursor:pointer;display:grid;place-items:center;font-size:18px;letter-spacing:1px}
+li .more:hover,li.open .more{opacity:1;color:var(--text)}
+@media (hover:hover){li:not(.open):not(:hover) .more{opacity:0}li .more:focus-visible{opacity:1}}
+li .acts{display:flex;gap:2px;margin:2px -4px 4px 0;animation:pop .14s ease-out}
+.act{height:44px;padding:0 3px;border:0;background:none;cursor:pointer;color:var(--text)}
+.act span{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;white-space:nowrap}
+.act svg{width:16px;height:16px;color:var(--muted)}
+.act:hover span{border-color:var(--accent)}
+.act.on svg{color:#d49a00;fill:#d49a00}
+.act.on span{color:var(--muted)}
+.act.del:hover span{border-color:var(--danger);color:var(--danger)}
 
 /* 入力欄（下に固定） */
 .dock{flex:none;position:relative;z-index:22;background:var(--bg);border-top:1px solid var(--line);padding-bottom:calc(8px + env(safe-area-inset-bottom))}
@@ -206,7 +215,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <main id="historyBox" aria-label="履歴">
   <div class="wrap">
     <ul id="history"></ul>
-    <div class="empty" id="empty">話した言葉がここに残ります。<br>押すともう一度話し、☆ で「よく使う言葉」に入れられます。</div>
+    <div class="empty" id="empty">話した言葉がここに残ります。<br>押すともう一度話します。<br>⋯ から「よく使う言葉」に入れたり、大きく見せたりできます。</div>
   </div>
 </main>
 
@@ -333,7 +342,7 @@ function loadState() {
     let old = {};
     try { old = JSON.parse(localStorage.getItem("echo.v2")) || {}; } catch {}
     s = {voice: old.voice, rate: old.rate, pitch: old.pitch,
-         history: (old.history || []).map(h => ({id: String(h.id), text: h.text})),
+         history: (old.history || []).map(h => ({id: String(h.id), text: h.text, t: h.t})),
          scenes: defaultScenes()};
   }
   for (const k of Object.keys(s)) if (s[k] === undefined || s[k] === null) delete s[k];
@@ -538,40 +547,74 @@ $("#deleteScene").onclick = () => {
 };
 
 /* ---------- F3 履歴 ---------- */
+let openId = null;                   // 操作（☆ ⛶ ✕）を出している履歴。既定は最新
 function addHistory(str) {
-  const item = {id: uid(), text: str};
+  const item = {id: uid(), text: str, t: Date.now()};
   state.history = [item, ...state.history.filter(h => h.text !== str)].slice(0, 100);
+  openId = null;
   save(); renderHistory(true);
   return item;
 }
-const SPK = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 4V6L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>`;
-const STAR = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg>`;
-const EXPAND = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>`;
-function mini(html, label, onclick, cls = "") {
+const STAR = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg>`;
+const EXPAND = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>`;
+const XMARK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>`;
+function act(icon, text, label, onclick, cls = "") {
   const b = document.createElement("button");
-  b.className = `mini ${cls}`; b.innerHTML = html; b.setAttribute("aria-label", label); b.title = label; b.onclick = onclick;
+  b.className = `act ${cls}`; b.innerHTML = `<span>${icon}${text}</span>`; b.setAttribute("aria-label", label); b.onclick = onclick;
   return b;
+}
+const pad = n => String(n).padStart(2, "0");
+function whenLabel(t) {
+  const d = new Date(t), now = new Date();
+  const hm = `${d.getHours()}:${pad(d.getMinutes())}`;
+  return d.toDateString() === now.toDateString() ? hm : `${d.getMonth() + 1}/${d.getDate()} ${hm}`;
 }
 function renderHistory(toBottom = false) {
   const box = $("#historyBox");
   const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
   const inPhrases = new Set(state.scenes.flatMap(s => s.phrases));
-  $("#history").replaceChildren(...state.history.slice().reverse().map(item => {
+  const shown = openId ?? state.history[0]?.id;
+  const items = [];
+  let prevT = null;
+  for (const item of state.history.slice().reverse()) {
+    // 15 分以上あいたら時刻を挟む（会話のまとまりが分かるように）
+    if (item.t && (prevT === null || item.t - prevT > 15 * 60e3)) {
+      const w = document.createElement("li");
+      w.className = "when"; w.textContent = whenLabel(item.t);
+      items.push(w);
+    }
+    if (item.t) prevT = item.t;
     const li = document.createElement("li");
     const key = `h:${item.id}`;
     li.dataset.key = key;
     if (playing === key) li.classList.add("playing");
+    const open = item.id === shown;
+    li.classList.toggle("open", open);
+    const row = document.createElement("div");
+    row.className = "row";
+    const more = document.createElement("button");
+    more.className = "more"; more.textContent = "⋯";
+    more.setAttribute("aria-label", `操作：${item.text}`); more.setAttribute("aria-expanded", String(open));
+    more.onclick = () => { openId = open ? "" : item.id; renderHistory(); document.querySelector(`[data-key="${key}"] .more`)?.focus(); };
     const b = document.createElement("button");
-    b.className = "say"; b.innerHTML = SPK; b.append(item.text);
+    b.className = "say"; b.textContent = item.text;
     b.setAttribute("aria-label", `もう一度話す：${item.text}`);
     b.onclick = () => say(item.text, key);
-    const fav = inPhrases.has(item.text);
-    li.append(b,
-      mini(STAR, fav ? "よく使う言葉に入っています" : `「${scene().name}」に入れる`, () => addPhrase(item.text), fav ? "on" : ""),
-      mini(EXPAND, "大きく見せる", () => openShow(item.text)),
-      mini("✕", "この履歴を消す", () => { state.history = state.history.filter(x => x.id !== item.id); save(); renderHistory(); }, "del"));
-    return li;
-  }));
+    row.append(more, b);
+    li.append(row);
+    if (open) {
+      const acts = document.createElement("div");
+      acts.className = "acts";
+      const fav = inPhrases.has(item.text);
+      acts.append(
+        act(STAR, fav ? "入っています" : "よく使う言葉に", fav ? "よく使う言葉に入っています" : `「${scene().name}」に入れる`, () => addPhrase(item.text), fav ? "on" : ""),
+        act(EXPAND, "見せる", "大きく見せる", () => openShow(item.text)),
+        act(XMARK, "消す", "この履歴を消す", () => { state.history = state.history.filter(x => x.id !== item.id); openId = null; save(); renderHistory(); }, "del"));
+      li.append(acts);
+    }
+    items.push(li);
+  }
+  $("#history").replaceChildren(...items);
   $("#empty").hidden = state.history.length > 0;
   $("#clear").hidden = state.history.length === 0;
   if (toBottom || nearBottom) box.scrollTop = box.scrollHeight;
