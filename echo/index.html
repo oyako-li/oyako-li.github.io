@@ -33,30 +33,57 @@ body.speaking .logo i:nth-child(3){animation:ripple 1.2s ease-out .4s infinite}
 h1{font-size:22px;font-weight:600;letter-spacing:.04em;margin:0}
 .tag{color:var(--muted);font-size:14px}
 .spacer{flex:1}
-.icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer}
-.icon-btn:hover{border-color:var(--accent)}
-.icon-btn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
 
-.composer{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:6px;transition:border-color .15s}
+.composer{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:6px;transition:border-color .15s}
 .composer:focus-within{border-color:var(--accent)}
 textarea{display:block;width:100%;min-height:96px;max-height:40vh;resize:none;border:0;outline:0;background:transparent;color:var(--text);font:inherit;font-size:18px;padding:12px 12px 4px}
 textarea::placeholder{color:var(--muted)}
 .bar{display:flex;align-items:center;gap:8px;padding:4px 6px 4px 12px}
-.hint{color:var(--muted);font-size:12px}
+.hint{color:var(--muted);font-size:12px;margin:8px 6px 0}
 @media (hover:none),(max-width:520px){.hint{display:none}}
+.voice-chip{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%;height:34px;padding:0 10px 0 8px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit;font-size:13px;cursor:pointer;transition:border-color .15s,background .15s}
+.voice-chip:hover,.voice-chip[aria-expanded="true"]{border-color:var(--accent)}
+.voice-chip svg{flex:none;color:var(--accent)}
+.voice-chip .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.voice-chip .meta{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.voice-chip .caret{color:var(--muted);transition:transform .15s}
+.voice-chip[aria-expanded="true"] .caret{transform:rotate(180deg)}
 kbd{font:inherit;font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px}
 .speak{flex:none;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:42px;padding:0 18px;border-radius:12px;border:0;background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}
 .speak:disabled{opacity:.4;cursor:default}
 .speak.stop{background:var(--danger)}
 @media (prefers-color-scheme:dark){.speak{color:#10131f}}
 
-.settings{display:none;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:12px;gap:12px}
-.settings.open{display:grid}
-.settings label{display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:12px;font-size:14px}
-.settings .val{color:var(--muted);font-variant-numeric:tabular-nums;min-width:3ch;text-align:right}
-select{width:100%;height:36px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:14px;padding:0 8px}
+/* 声の設定：PC は話すボタンの下に出るポップオーバー、スマホは下から出るシート */
+.backdrop{position:fixed;inset:0;z-index:9;background:transparent}
+.backdrop[hidden]{display:none}
+.panel{position:absolute;z-index:10;top:calc(100% + 8px);left:0;width:min(360px,100%);background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.14);padding:14px 16px 12px;display:grid;gap:14px;transform-origin:top left;animation:pop .14s ease-out}
+.panel[hidden]{display:none}
+@keyframes pop{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.panel-head{display:flex;align-items:center;gap:8px}
+.panel-head h2{font-size:15px;margin:0}
+.grab{display:none}
+.voices{display:grid;gap:2px;max-height:190px;overflow:auto;margin:0 -6px;padding:0 2px}
+.voices button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:var(--text);font:inherit;font-size:14px;text-align:left;padding:8px 10px;border-radius:10px;cursor:pointer}
+.voices button:hover{background:var(--bg)}
+.voices button[aria-checked="true"]{background:var(--accent-soft)}
+.voices .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.voices button[aria-checked="true"] .dot{border-color:var(--accent)}
+.voices button[aria-checked="true"] .dot::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.voices .sub{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
+.slider{display:grid;grid-template-columns:44px 1fr 48px;align-items:center;gap:10px;font-size:14px}
+.slider .val{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
 input[type=range]{width:100%;accent-color:var(--accent)}
-.settings .row{display:flex;gap:8px;justify-content:flex-end}
+.panel-foot{display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);padding-top:10px}
+.panel-foot .done{margin-left:auto;height:34px;padding:0 14px;border-radius:10px;border:0;background:var(--accent);color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+@media (prefers-color-scheme:dark){.panel-foot .done{color:#10131f}.panel{box-shadow:0 12px 40px rgba(0,0,0,.5)}}
+@media (max-width:520px){
+  .backdrop{background:rgba(0,0,0,.35)}
+  .panel{position:fixed;top:auto;left:0;right:0;bottom:0;width:auto;border-radius:20px 20px 0 0;border-bottom:0;padding:8px 18px calc(14px + env(safe-area-inset-bottom));animation:sheet .2s ease-out}
+  .grab{display:block;width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 4px}
+  .voices{max-height:34vh}
+  @keyframes sheet{from{transform:translateY(100%)}to{transform:none}}
+}
 .link-btn{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;cursor:pointer;padding:4px}
 
 .history-head{display:flex;align-items:baseline;margin:28px 4px 8px}
@@ -79,10 +106,6 @@ li .del:hover{opacity:1;color:var(--danger)}
   <header>
     <div class="logo" aria-hidden="true"><i></i><i></i><i></i></div>
     <div><h1>echo</h1><div class="tag">打った言葉を、その場で声に。</div></div>
-    <span class="spacer"></span>
-    <button class="icon-btn" id="toggleSettings" aria-label="声の設定" aria-expanded="false" aria-controls="settings" title="声の設定">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
-    </button>
   </header>
 
   <div class="notice" id="unsupported" hidden>このブラウザは読み上げ（Web Speech API）に対応していません。Chrome・Safari・Edge で開いてください。</div>
@@ -91,21 +114,32 @@ li .del:hover{opacity:1;color:var(--danger)}
     <label for="text" class="sr">読み上げる言葉</label>
     <textarea id="text" placeholder="例：あ〜、マイクテスト" autofocus enterkeyhint="send"></textarea>
     <div class="bar">
-      <span class="hint"><kbd>Enter</kbd> で話す ・ <kbd>Shift</kbd>+<kbd>Enter</kbd> で改行 ・ <kbd>Esc</kbd> で止める</span>
+      <button class="voice-chip" id="voiceChip" aria-haspopup="dialog" aria-expanded="false" aria-controls="panel" title="声を変える">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>
+        <span class="name" id="chipName">おまかせ</span><span class="meta" id="chipMeta"></span>
+        <svg class="caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
       <span class="spacer"></span>
       <button class="speak" id="speak" disabled>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 4V6L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
         <span>話す</span>
       </button>
     </div>
+    <div class="panel" id="panel" role="dialog" aria-label="声の設定" hidden>
+      <div class="grab" aria-hidden="true"></div>
+      <div class="panel-head"><h2>声</h2></div>
+      <div class="voices" id="voices" role="radiogroup" aria-label="声"></div>
+      <label class="slider">速さ<input type="range" id="rate" min="0.5" max="2" step="0.05"><span class="val" id="rateVal"></span></label>
+      <label class="slider">高さ<input type="range" id="pitch" min="0" max="2" step="0.05"><span class="val" id="pitchVal"></span></label>
+      <div class="panel-foot">
+        <button class="link-btn" id="test">試しに聞く</button>
+        <button class="link-btn" id="resetVoice">初期値に戻す</button>
+        <button class="done" id="done">完了</button>
+      </div>
+    </div>
   </section>
-
-  <section class="settings" id="settings" aria-label="声の設定">
-    <label>声<select id="voice"></select><span></span></label>
-    <label>速さ<input type="range" id="rate" min="0.5" max="2" step="0.05"><span class="val" id="rateVal"></span></label>
-    <label>高さ<input type="range" id="pitch" min="0" max="2" step="0.05"><span class="val" id="pitchVal"></span></label>
-    <div class="row"><button class="link-btn" id="test">試しに聞く</button><button class="link-btn" id="resetVoice">初期値に戻す</button></div>
-  </section>
+  <p class="hint"><kbd>Enter</kbd> で話す ・ <kbd>Shift</kbd>+<kbd>Enter</kbd> で改行 ・ <kbd>Esc</kbd> で止める</p>
+  <div class="backdrop" id="backdrop" hidden></div>
 
   <div class="history-head">
     <h2>履歴</h2><span class="spacer"></span>
@@ -135,32 +169,67 @@ if (!synth || !window.SpeechSynthesisUtterance) {
 
 /* ---------- 声 ---------- */
 let voices = [];
+const shortName = v => v.name.replace(/^(Microsoft|Google)\s+/, "").replace(/\s*\(.*?\)\s*$/, "").replace(/\s+-\s+Japanese.*$/i, "");
 function loadVoices() {
   const all = synth ? synth.getVoices() : [];
-  if (!all.length) { $("#voice").innerHTML = `<option value="">おまかせ（日本語）</option>`; return; }
   const ja = all.filter(v => v.lang.replace("_", "-").toLowerCase().startsWith("ja"));
   voices = ja.length ? ja : all;
-  $("#voice").innerHTML = `<option value="">おまかせ（日本語）</option>` +
-    voices.map(v => `<option value="${v.voiceURI.replace(/"/g, "&quot;")}">${v.name.replace(/</g, "&lt;")}${v.localService ? "" : "（オンライン）"}</option>`).join("");
-  $("#voice").value = voices.some(v => v.voiceURI === state.voice) ? state.voice : "";
+  if (state.voice && !voices.some(v => v.voiceURI === state.voice) && all.length) state.voice = "";
+  renderVoices();
+  syncChip();
 }
-loadVoices();
-synth?.addEventListener?.("voiceschanged", loadVoices);
-
+function renderVoices() {
+  const opts = [{uri: "", name: "おまかせ", sub: "端末の日本語の声"}]
+    .concat(voices.map(v => ({uri: v.voiceURI, name: shortName(v), sub: v.localService ? "" : "オンライン"})));
+  $("#voices").replaceChildren(...opts.map(o => {
+    const b = document.createElement("button");
+    b.type = "button"; b.setAttribute("role", "radio"); b.setAttribute("aria-checked", String(o.uri === state.voice));
+    b.innerHTML = `<span class="dot"></span><span class="n"></span><span class="sub"></span>`;
+    b.querySelector(".n").textContent = o.name;
+    b.querySelector(".sub").textContent = o.sub;
+    b.onclick = () => { state.voice = o.uri; save(); renderVoices(); syncChip(); say("こんにちは。この声で読み上げます。"); };
+    return b;
+  }));
+}
+function syncChip() {
+  const v = voices.find(v => v.voiceURI === state.voice);
+  $("#chipName").textContent = v ? shortName(v) : "おまかせ";
+  const meta = [];
+  if (Math.abs(state.rate - 1) > 0.001) meta.push(`${(+state.rate).toFixed(2).replace(/0$/, "")}×`);
+  if (Math.abs(state.pitch - 1) > 0.001) meta.push(`高さ ${(+state.pitch).toFixed(2).replace(/0$/, "")}`);
+  $("#chipMeta").textContent = meta.length ? `・${meta.join("・")}` : "";
+}
 function syncSliders() {
   $("#rate").value = state.rate; $("#rateVal").textContent = `${(+state.rate).toFixed(2)}×`;
   $("#pitch").value = state.pitch; $("#pitchVal").textContent = (+state.pitch).toFixed(2);
+  syncChip();
 }
+loadVoices();
 syncSliders();
-$("#voice").onchange = e => { state.voice = e.target.value; save(); };
+synth?.addEventListener?.("voiceschanged", loadVoices);
 $("#rate").oninput = e => { state.rate = +e.target.value; syncSliders(); save(); };
 $("#pitch").oninput = e => { state.pitch = +e.target.value; syncSliders(); save(); };
-$("#resetVoice").onclick = () => { Object.assign(state, DEFAULTS); $("#voice").value = ""; syncSliders(); save(); };
+$("#rate").onchange = $("#pitch").onchange = () => say("この速さと高さです。");
+$("#resetVoice").onclick = () => { Object.assign(state, DEFAULTS); save(); renderVoices(); syncSliders(); };
 $("#test").onclick = () => say("こんにちは。この声で読み上げます。");
-$("#toggleSettings").onclick = e => {
-  const open = $("#settings").classList.toggle("open");
-  e.currentTarget.setAttribute("aria-expanded", open);
-};
+
+/* 開く・閉じる */
+const panel = $("#panel"), chip = $("#voiceChip");
+const isOpen = () => !panel.hidden;
+function openPanel() {
+  panel.hidden = false; $("#backdrop").hidden = false;
+  chip.setAttribute("aria-expanded", "true");
+  (panel.querySelector('[aria-checked="true"]') || panel.querySelector("button"))?.focus({preventScroll: true});
+}
+function closePanel(focusChip = true) {
+  if (!isOpen()) return;
+  panel.hidden = true; $("#backdrop").hidden = true;
+  chip.setAttribute("aria-expanded", "false");
+  if (focusChip) chip.focus({preventScroll: true});
+}
+chip.onclick = () => isOpen() ? closePanel() : openPanel();
+$("#backdrop").onclick = () => closePanel(false);
+$("#done").onclick = () => { closePanel(false); text.focus(); };
 
 /* ---------- 読み上げ ---------- */
 function say(str, id = null) {
@@ -171,7 +240,7 @@ function say(str, id = null) {
   u.rate = state.rate;
   u.pitch = state.pitch;
   const v = voices.find(v => v.voiceURI === state.voice);
-  if (v) { u.voice = v; u.lang = v.lang; }
+  if (v) { try { u.voice = v; u.lang = v.lang; } catch {} }
   u.onstart = () => setPlaying(id);
   u.onend = u.onerror = () => { if (playingId === id) setPlaying(null, true); };
   setPlaying(id);
@@ -211,11 +280,9 @@ text.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
     e.preventDefault();
     submit();
-  } else if (e.key === "Escape") {
-    stop();
   }
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") stop(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (isOpen()) closePanel(); else stop(); } });
 text.addEventListener("input", () => { autosize(); updateButton(); });
 speakBtn.onclick = submit;
 function autosize() { text.style.height = "auto"; text.style.height = `${Math.max(96, text.scrollHeight)}px`; }
